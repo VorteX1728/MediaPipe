@@ -42,7 +42,14 @@ while (cap.isOpened()):
 
     # Рисуем распознанное, если распозналось
     if results.multi_hand_landmarks is not None:
-        landmarks = results.multi_hand_landmarks[0].landmark
+        if len(results.multi_handedness) == 1:
+            landmarks = results.multi_hand_landmarks[0].landmark
+            landmarks2 = []
+        else:
+            landmarks = results.multi_hand_landmarks[0].landmark
+            landmarks2 = results.multi_hand_landmarks[1].landmark
+        print("1:", len(landmarks))
+        print("2:", len(landmarks2))
         points = get_points(landmarks, flippedRGB.shape)
 
         cv2.drawContours(flippedRGB, [points], 0, (255, 0, 0), 2)
@@ -58,7 +65,7 @@ while (cap.isOpened()):
                 # Если кулак сжался, увеличиваем счётчик кликов
                 count += 1
                 print(f"Click {count}")
-                pyautogui.click()  # Выполняем клик мышью
+                pyautogui.click()
                 prev_fist = True
 
         # Рисуем счётчик на экране
