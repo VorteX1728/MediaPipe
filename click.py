@@ -3,7 +3,6 @@ import mediapipe as mp
 import numpy as np
 import pyautogui
 
-
 # Функция для получения точек для рисования контура
 def get_points(landmark, shape):
     points = []
@@ -25,7 +24,6 @@ cap = cv2.VideoCapture(0)
 count = 0
 prev_fist = False
 
-# Получаем размер экрана для масштабирования координат
 screen_width, screen_height = pyautogui.size()
 
 while (cap.isOpened()):
@@ -55,8 +53,8 @@ while (cap.isOpened()):
         cv2.drawContours(flippedRGB, [points], 0, (255, 0, 0), 2)
         (x, y), r = cv2.minEnclosingCircle(points)
         ws = palm_size(landmarks, flippedRGB.shape)
-
-        if 2 * r / ws > 1.3:
+        print(2 * r / ws)
+        if 2 * r / ws > 1.4:
             cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 0, 255), 2)  # кулак разжат
             prev_fist = False
         else:
@@ -65,9 +63,10 @@ while (cap.isOpened()):
                 # Если кулак сжался, увеличиваем счётчик кликов
                 count += 1
                 print(f"Click {count}")
+                if len(landmarks2) != 0:
+                    pyautogui.click()
                 pyautogui.click()
                 prev_fist = True
-
         # Рисуем счётчик на экране
         cv2.putText(flippedRGB, str(count), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
 
