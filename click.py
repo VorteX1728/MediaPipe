@@ -2,23 +2,41 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import pyautogui
+import pygame
 
-# Функция для получения точек для рисования контура
 def get_points(landmark, shape):
     points = []
     for mark in landmark:
         points.append([mark.x * shape[1], mark.y * shape[0]])
     return np.array(points, dtype=np.int32)
 
-
-# Функция для вычисления размера ладони
 def palm_size(landmark, shape):
     x1, y1 = landmark[0].x * shape[1], landmark[0].y * shape[0]
     x2, y2 = landmark[5].x * shape[1], landmark[5].y * shape[0]
     return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** .5
 
+# Don't open this function)
+def secret():
+    pygame.mixer.init()
+    image = cv2.imread('sys error.jpg')
+    cv2.namedWindow('error', cv2.WINDOW_NORMAL)
 
-# Создаем детектор
+    cv2.waitKey(1)
+
+    cv2.setWindowProperty('error', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    pygame.mixer.music.load('err1.mp3')
+    pygame.mixer.music.play()
+    pygame.mixer.music.load('err2.mp3')
+    pygame.mixer.music.play()
+    cv2.imshow('error', image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def V(landmarks):
+    if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y > landmarks[14].y and landmarks[20].y > landmarks[18].y:
+        return True
+    return False
+
 handsDetector = mp.solutions.hands.Hands()
 cap = cv2.VideoCapture(0)
 count = 0
@@ -32,13 +50,10 @@ while (cap.isOpened()):
         break
 
     flipped = np.fliplr(frame)
-    # Переводим в формат RGB для распознавания
     flippedRGB = cv2.cvtColor(flipped, cv2.COLOR_BGR2RGB)
 
-    # Распознаем
     results = handsDetector.process(flippedRGB)
 
-    # Рисуем распознанное, если распозналось
     if results.multi_hand_landmarks is not None:
         if len(results.multi_handedness) == 1:
             landmarks = results.multi_hand_landmarks[0].landmark
@@ -53,32 +68,29 @@ while (cap.isOpened()):
         cv2.drawContours(flippedRGB, [points], 0, (255, 0, 0), 2)
         (x, y), r = cv2.minEnclosingCircle(points)
         ws = palm_size(landmarks, flippedRGB.shape)
-        print(2 * r / ws)
+        if V(landmarks):
+            secret()
         if 2 * r / ws > 1.4:
-            cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 0, 255), 2)  # кулак разжат
+            cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 0, 255), 2)
             prev_fist = False
         else:
-            cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 255, 0), 2)  # кулак сжат
+            cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 255, 0), 2)
             if not prev_fist:
-                # Если кулак сжался, увеличиваем счётчик кликов
                 count += 1
                 print(f"Click {count}")
                 if len(landmarks2) != 0:
                     pyautogui.click()
                 pyautogui.click()
                 prev_fist = True
-        # Рисуем счётчик на экране
         cv2.putText(flippedRGB, str(count), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
 
         xp = int(landmarks[0].x * flippedRGB.shape[1])
         yp = int(landmarks[0].y * flippedRGB.shape[0])
         pyautogui.moveTo(xp * screen_width / flippedRGB.shape[1], yp * screen_height / flippedRGB.shape[0])
 
-    # Переводим обратно в BGR и показываем результат
     res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
     cv2.imshow("Hands", res_image)
 
-# Освобождаем ресурсы
 handsDetector.close()
 cap.release()
 cv2.destroyAllWindows()
