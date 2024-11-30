@@ -18,13 +18,14 @@ def palm_size(landmark, shape):
 # Don't open this function)
 def secret():
     pygame.mixer.init()
-    image = cv2.imread('sys error.jpg')
+    image = cv2.imread('sys error3.png')
     cv2.namedWindow('error', cv2.WINDOW_NORMAL)
 
     cv2.waitKey(1)
 
     cv2.setWindowProperty('error', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     pygame.mixer.music.load('err1.mp3')
+    pygame.mixer.music.set_volume(1.0)
     pygame.mixer.music.play()
     pygame.mixer.music.load('err2.mp3')
     pygame.mixer.music.play()
@@ -33,8 +34,17 @@ def secret():
     cv2.destroyAllWindows()
 
 def V(landmarks):
-    if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y > landmarks[14].y and landmarks[20].y > landmarks[18].y:
-        return True
+    if len(landmarks) > 0:
+        if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y > landmarks[14].y and landmarks[20].y > landmarks[18].y:
+            return True
+    return False
+
+def like(landmarks):
+    if len(landmarks) > 0:
+        if landmarks[4].y < landmarks[0].y and landmarks[4].y < landmarks[5].y and landmarks[4].x > landmarks[2].x:
+            print(landmarks[8].x - landmarks[5].x)
+            if abs(landmarks[8].x - landmarks[5].x) < 0.05 and abs(landmarks[12].x - landmarks[9].x) < 0.05:
+                return True
     return False
 
 handsDetector = mp.solutions.hands.Hands()
@@ -61,8 +71,6 @@ while (cap.isOpened()):
         else:
             landmarks = results.multi_hand_landmarks[0].landmark
             landmarks2 = results.multi_hand_landmarks[1].landmark
-        print("1:", len(landmarks))
-        print("2:", len(landmarks2))
         points = get_points(landmarks, flippedRGB.shape)
 
         cv2.drawContours(flippedRGB, [points], 0, (255, 0, 0), 2)
@@ -70,6 +78,10 @@ while (cap.isOpened()):
         ws = palm_size(landmarks, flippedRGB.shape)
         if V(landmarks):
             secret()
+        if like(landmarks):
+            screenshot = pyautogui.screenshot()
+            screenshot.save('screenshot.png')
+            print("Screenshot")
         if 2 * r / ws > 1.4:
             cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 0, 255), 2)
             prev_fist = False
