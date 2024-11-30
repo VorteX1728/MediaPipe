@@ -51,7 +51,9 @@ handsDetector = mp.solutions.hands.Hands()
 cap = cv2.VideoCapture(0)
 count = 0
 prev_fist = False
+scrtime = 0
 
+flag = False
 screen_width, screen_height = pyautogui.size()
 
 while (cap.isOpened()):
@@ -77,6 +79,7 @@ while (cap.isOpened()):
         (x, y), r = cv2.minEnclosingCircle(points)
         ws = palm_size(landmarks, flippedRGB.shape)
         if V(landmarks):
+            pyautogui.alert(text = 'Do you want to continue?', title = 'Sys error code 019x192222988133', button = 'Yes')
             secret()
         if like(landmarks):
             screenshot = pyautogui.screenshot()
@@ -89,9 +92,11 @@ while (cap.isOpened()):
             cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 255, 0), 2)
             if not prev_fist:
                 count += 1
+                flag = True
                 print(f"Click {count}")
                 if len(landmarks2) != 0:
                     pyautogui.click()
+                    pyautogui
                 pyautogui.click()
                 prev_fist = True
         cv2.putText(flippedRGB, str(count), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
@@ -100,6 +105,8 @@ while (cap.isOpened()):
         yp = int(landmarks[0].y * flippedRGB.shape[0])
         pyautogui.moveTo(xp * screen_width / flippedRGB.shape[1], yp * screen_height / flippedRGB.shape[0])
 
+    if flag:
+        cv2.putText(flippedRGB, f"Click {count}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
     res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
     cv2.imshow("Hands", res_image)
 
