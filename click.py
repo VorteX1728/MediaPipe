@@ -54,6 +54,7 @@ prev_fist = False
 scrtime = 0
 
 flag = False
+pygame.mixer.init()
 screen_width, screen_height = pyautogui.size()
 
 while (cap.isOpened()):
@@ -82,9 +83,18 @@ while (cap.isOpened()):
             pyautogui.alert(text = 'Do you want to continue?', title = 'Sys error code 019x192222988133', button = 'Yes')
             secret()
         if like(landmarks):
-            screenshot = pyautogui.screenshot()
-            screenshot.save('screenshot.png')
-            print("Screenshot")
+            scrtime += 1
+            if scrtime > 7:
+                pygame.mixer.music.load('screenshot.mp3')
+                pygame.mixer.music.play()
+                screenshot = pyautogui.screenshot()
+                screenshot.save('screenshot.png')
+                cv2.putText(flippedRGB, "Screenshot", (280, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255),
+                            thickness=2)
+                print("Screenshot")
+                scrtime = 0
+        else:
+            scrtime = 0
         if 2 * r / ws > 1.4:
             cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 0, 255), 2)
             prev_fist = False
@@ -99,7 +109,7 @@ while (cap.isOpened()):
                     pyautogui
                 pyautogui.click()
                 prev_fist = True
-        cv2.putText(flippedRGB, str(count), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
+        #cv2.putText(flippedRGB, str(count), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
 
         xp = int(landmarks[0].x * flippedRGB.shape[1])
         yp = int(landmarks[0].y * flippedRGB.shape[0])
