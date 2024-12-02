@@ -47,11 +47,22 @@ def like(landmarks):
                 return True
     return False
 
+def threefingers(landmarks):
+    if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y > landmarks[3].y and landmarks[20].y > landmarks[18].y:
+        return True
+    return False
+
+def fourfingers(landmarks):
+    if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y > landmarks[3].y and landmarks[20].y < landmarks[18].y:
+        return True
+    return False
+
 handsDetector = mp.solutions.hands.Hands()
 cap = cv2.VideoCapture(0)
 count = 0
 prev_fist = False
 scrtime = 0
+press = False
 
 flag = False
 pygame.mixer.init()
@@ -80,7 +91,7 @@ while (cap.isOpened()):
         (x, y), r = cv2.minEnclosingCircle(points)
         ws = palm_size(landmarks, flippedRGB.shape)
         if V(landmarks):
-            pyautogui.alert(text = 'Do you want to continue?', title = 'Sys error code 019x192222988133', button = 'Yes')
+            pyautogui.alert(text = 'Continue?', title = 'Sys error code 019x192222988133', button = 'Yes')
             secret()
         if like(landmarks):
             scrtime += 1
@@ -105,9 +116,20 @@ while (cap.isOpened()):
                 flag = True
                 print(f"Click {count}")
                 if len(landmarks2) != 0:
+                    if threefingers(landmarks2):
+                        if not press:
+                            pyautogui.mouseDown()
+                            press = True
+                            print("True")
+                    elif fourfingers(landmarks2):
+                        if press:
+                            pyautogui.mouseUp()
+                            press = False
+                            print("False")
+                    else:
+                        pyautogui.doubleClick()
+                else:
                     pyautogui.click()
-                    pyautogui
-                pyautogui.click()
                 prev_fist = True
         #cv2.putText(flippedRGB, str(count), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
 
