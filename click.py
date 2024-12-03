@@ -15,7 +15,7 @@ def palm_size(landmark, shape):
     x2, y2 = landmark[5].x * shape[1], landmark[5].y * shape[0]
     return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** .5
 
-# Don't open this function)
+# Don't open this function :)
 def secret():
     pygame.mixer.init()
     image = cv2.imread('sys error3.png')
@@ -41,20 +41,26 @@ def V(landmarks):
 
 def like(landmarks):
     if len(landmarks) > 0:
-        if landmarks[4].y < landmarks[0].y and landmarks[4].y < landmarks[5].y and landmarks[4].x > landmarks[2].x:
-            print(landmarks[8].x - landmarks[5].x)
-            if abs(landmarks[8].x - landmarks[5].x) < 0.05 and abs(landmarks[12].x - landmarks[9].x) < 0.05:
-                return True
+        if landmarks[4].y < landmarks[0].y and landmarks[4].y < landmarks[5].y and landmarks[8].x > landmarks[5].x and landmarks[12].x > landmarks[9].x and landmarks[16].x > landmarks[13].x and landmarks[20].x > landmarks[17].x:
+            return True
     return False
 
 def threefingers(landmarks):
-    if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y > landmarks[3].y and landmarks[20].y > landmarks[18].y:
-        return True
+    if len(landmarks) > 0:
+        if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y > landmarks[3].y and landmarks[20].y > landmarks[18].y:
+            return True
     return False
 
 def fourfingers(landmarks):
-    if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y > landmarks[3].y and landmarks[20].y < landmarks[18].y:
-        return True
+    if len(landmarks) > 0:
+        if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y > landmarks[3].y and landmarks[20].y < landmarks[18].y:
+            return True
+    return False
+
+def fivefingers(landmarks):
+    if len(landmarks) > 0:
+        if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y < landmarks[3].y and landmarks[20].y < landmarks[18].y:
+            return True
     return False
 
 handsDetector = mp.solutions.hands.Hands()
@@ -66,7 +72,7 @@ press = False
 
 flag = False
 pygame.mixer.init()
-screen_width, screen_height = pyautogui.size()
+width, height = pyautogui.size()
 
 while (cap.isOpened()):
     ret, frame = cap.read()
@@ -90,9 +96,21 @@ while (cap.isOpened()):
         cv2.drawContours(flippedRGB, [points], 0, (255, 0, 0), 2)
         (x, y), r = cv2.minEnclosingCircle(points)
         ws = palm_size(landmarks, flippedRGB.shape)
-        if V(landmarks):
+        if V(landmarks) and V(landmarks2):
             pyautogui.alert(text = 'Continue?', title = 'Sys error code 019x192222988133', button = 'Yes')
             secret()
+        if len(landmarks2) != 0:
+            if threefingers(landmarks2):
+                if not press:
+                    pyautogui.mouseDown()
+                    press = True
+                    print("True")
+            elif fourfingers(landmarks2):
+                if press:
+                    pyautogui.mouseUp()
+                    press = False
+                    print("False")
+
         if like(landmarks):
             scrtime += 1
             if scrtime > 7:
@@ -116,26 +134,14 @@ while (cap.isOpened()):
                 flag = True
                 print(f"Click {count}")
                 if len(landmarks2) != 0:
-                    if threefingers(landmarks2):
-                        if not press:
-                            pyautogui.mouseDown()
-                            press = True
-                            print("True")
-                    elif fourfingers(landmarks2):
-                        if press:
-                            pyautogui.mouseUp()
-                            press = False
-                            print("False")
-                    else:
-                        pyautogui.doubleClick()
+                    pyautogui.doubleClick()
                 else:
                     pyautogui.click()
                 prev_fist = True
-        #cv2.putText(flippedRGB, str(count), (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
 
         xp = int(landmarks[0].x * flippedRGB.shape[1])
         yp = int(landmarks[0].y * flippedRGB.shape[0])
-        pyautogui.moveTo(xp * screen_width / flippedRGB.shape[1], yp * screen_height / flippedRGB.shape[0])
+        pyautogui.moveTo(xp * width / flippedRGB.shape[1], yp * height / flippedRGB.shape[0])
 
     if flag:
         cv2.putText(flippedRGB, f"Click {count}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
