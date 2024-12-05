@@ -39,10 +39,25 @@ def V(landmarks):
             return True
     return False
 
-def like(landmarks):
+def like(landmarks, threshold = 0.05):
     if len(landmarks) > 0:
-        if landmarks[4].y < landmarks[0].y and landmarks[4].y < landmarks[5].y and landmarks[8].x > landmarks[5].x and landmarks[12].x > landmarks[9].x and landmarks[16].x > landmarks[13].x and landmarks[20].x > landmarks[17].x:
-            return True
+        # Большой палец должен быть направлен вверх
+        thumb_up = landmarks[4].y < landmarks[3].y and landmarks[4].y < landmarks[0].y
+
+        # Расстояние между кончиками пальцев и основанием должно быть < 0.05
+        fingers_near_bases = (
+            abs(landmarks[8].y - landmarks[6].y) < threshold and  # Указательный палец
+            abs(landmarks[12].y - landmarks[10].y) < threshold and  # Средний палец
+            abs(landmarks[16].y - landmarks[14].y) < threshold and  # Безымянный палец
+            abs(landmarks[20].y - landmarks[18].y) < threshold     # Мизинец
+        )
+
+        # Остальные пальцы должны быть либо слева, либо справа от большого пальца
+        fingers_right = (landmarks[8].x > landmarks[4].x and landmarks[12].x > landmarks[4].x and landmarks[16].x > landmarks[4].x and landmarks[20].x > landmarks[4].x)
+
+        fingers_left = (landmarks[8].x < landmarks[4].x and landmarks[12].x < landmarks[4].x and landmarks[16].x < landmarks[4].x and landmarks[20].x < landmarks[4].x)
+
+        return thumb_up and fingers_near_bases and (fingers_right or fingers_left)
     return False
 
 def threefingers(landmarks):
@@ -69,7 +84,7 @@ def instruction():
     pygame.display.set_caption("Инструкция")
     font = pygame.font.Font(None, 32)
     instructiontext = [
-        "1. Покажите жест 'Лайк' на 2 руках в 1 сторону, чтобы сделать скриншот.",
+        "1. Покажите жест 'Лайк' на 2 руках и удерживайти 10 секунд, чтобы сделать скриншот.",
         "2. Покажите жест 'Три пальца' (указательный, средний и безымянный вверх),",
         "   чтобы зажать левую кнопку мыши.",
         "3. Покажите жест 'Четыре пальца' (четыре пальца вверх), чтобы отпустить левую кнопку мыши.",
@@ -183,9 +198,9 @@ if closet:
                         press = False
                         print("False")
 
-            if like(landmarks) and like(landmarks2):
+            if like(landmarks, threshold=0.05) and like(landmarks2, threshold=0.05):
                 scrtime += 1
-                if scrtime > 7:
+                if scrtime > 10:
                     pygame.mixer.music.load('screenshot.mp3')
                     pygame.mixer.music.play()
                     screenshot = pyautogui.screenshot()
