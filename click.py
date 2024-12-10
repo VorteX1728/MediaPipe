@@ -41,29 +41,23 @@ def V(landmarks):
 
 def like(landmarks, threshold = 0.05):
     if len(landmarks) > 0:
-        # Большой палец должен быть направлен вверх
-        thumb_up = landmarks[4].y < landmarks[3].y and landmarks[4].y < landmarks[0].y
+        up = landmarks[4].y < landmarks[3].y and landmarks[4].y < landmarks[0].y
+        fingersrust = (abs(landmarks[8].y - landmarks[6].y) < threshold and abs(landmarks[12].y - landmarks[10].y) < threshold and abs(landmarks[16].y - landmarks[14].y) < threshold and abs(landmarks[20].y - landmarks[18].y) < threshold)
+        right = (landmarks[8].x > landmarks[4].x and landmarks[12].x > landmarks[4].x and landmarks[16].x > landmarks[4].x and landmarks[20].x > landmarks[4].x)
+        left = (landmarks[8].x < landmarks[4].x and landmarks[12].x < landmarks[4].x and landmarks[16].x < landmarks[4].x and landmarks[20].x < landmarks[4].x)
 
-        # Расстояние между кончиками пальцев и основанием должно быть < 0.05
-        fingers_near_bases = (
-            abs(landmarks[8].y - landmarks[6].y) < threshold and  # Указательный палец
-            abs(landmarks[12].y - landmarks[10].y) < threshold and  # Средний палец
-            abs(landmarks[16].y - landmarks[14].y) < threshold and  # Безымянный палец
-            abs(landmarks[20].y - landmarks[18].y) < threshold     # Мизинец
-        )
-
-        # Остальные пальцы должны быть либо слева, либо справа от большого пальца
-        fingers_right = (landmarks[8].x > landmarks[4].x and landmarks[12].x > landmarks[4].x and landmarks[16].x > landmarks[4].x and landmarks[20].x > landmarks[4].x)
-
-        fingers_left = (landmarks[8].x < landmarks[4].x and landmarks[12].x < landmarks[4].x and landmarks[16].x < landmarks[4].x and landmarks[20].x < landmarks[4].x)
-
-        return thumb_up and fingers_near_bases and (fingers_right or fingers_left)
+        return up and fingersrust and (right or left)
     return False
 
-def threefingers(landmarks):
+def threefingers(landmarks, threshold=0.1):
     if len(landmarks) > 0:
-        if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y > landmarks[3].y and landmarks[20].y > landmarks[18].y:
-            return True
+        up = (landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y)
+        th = landmarks[4].y > landmarks[3].y
+        pi = landmarks[20].y > landmarks[18].y
+        rust = [abs(landmarks[8].x - landmarks[6].x), abs(landmarks[12].x - landmarks[10].x), abs(landmarks[16].x - landmarks[14].x),]
+        cons = all(d < threshold for d in rust)
+
+        return up and th and pi and cons
     return False
 
 def fourfingers(landmarks):
@@ -187,7 +181,7 @@ if closet:
                 pyautogui.alert(text = 'Continue?', title = 'Sys error code 019x192222988133', button = 'Yes')
                 secret()
             if len(landmarks2) != 0:
-                if threefingers(landmarks2):
+                if threefingers(landmarks2, threshold=0.1):
                     if not press:
                         pyautogui.mouseDown()
                         press = True
@@ -203,8 +197,8 @@ if closet:
                 if scrtime > 10:
                     pygame.mixer.music.load('screenshot.mp3')
                     pygame.mixer.music.play()
-                    screenshot = pyautogui.screenshot()
-                    screenshot.save('screenshot.png')
+                    pyautogui.hotkey('win', 'shift', 's')
+                    #screenshot.save('screenshot.png')
                     cv2.putText(flippedRGB, "Screenshot", (280, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255),
                                 thickness=2)
                     print("Screenshot")
@@ -229,6 +223,8 @@ if closet:
             xp = int(landmarks[0].x * flippedRGB.shape[1])
             yp = int(landmarks[0].y * flippedRGB.shape[0])
             pyautogui.moveTo(xp * width / flippedRGB.shape[1], yp * height / flippedRGB.shape[0])
+        else:
+            continue
 
         if flag:
             cv2.putText(flippedRGB, f"Click {count}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), thickness=2)
