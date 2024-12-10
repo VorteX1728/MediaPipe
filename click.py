@@ -33,12 +33,14 @@ def secret():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+# Функция распознавания жеста V (2 пальца вверх)
 def V(landmarks):
     if len(landmarks) > 0:
         if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y > landmarks[14].y and landmarks[20].y > landmarks[18].y:
             return True
     return False
 
+# Функция определения жеста лайк
 def like(landmarks, threshold = 0.05):
     if len(landmarks) > 0:
         up = landmarks[4].y < landmarks[3].y and landmarks[4].y < landmarks[0].y
@@ -49,6 +51,7 @@ def like(landmarks, threshold = 0.05):
         return up and fingersrust and (right or left)
     return False
 
+# Функция распознавания жеста "3 пальца вверх"
 def threefingers(landmarks, threshold=0.1):
     if len(landmarks) > 0:
         up = (landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y)
@@ -60,18 +63,21 @@ def threefingers(landmarks, threshold=0.1):
         return up and th and pi and cons
     return False
 
+# Функция распознавания жеста "4 пальца вверх"
 def fourfingers(landmarks):
     if len(landmarks) > 0:
         if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y > landmarks[3].y and landmarks[20].y < landmarks[18].y:
             return True
     return False
 
+# Функция распознавания жеста "5 пальцев вверх" (Я её не использовал, но для себя прописал)
 def fivefingers(landmarks):
     if len(landmarks) > 0:
         if landmarks[8].y < landmarks[6].y and landmarks[12].y < landmarks[10].y and landmarks[16].y < landmarks[14].y and landmarks[4].y < landmarks[3].y and landmarks[20].y < landmarks[18].y:
             return True
     return False
 
+# Это инструкция к проекту
 def instruction():
     pygame.init()
     screen = pygame.display.set_mode((1200, 600))
@@ -108,6 +114,7 @@ def instruction():
                 menu = False
         pygame.display.flip()
 
+# Вот настраиваемые параметры
 pygame.init()
 screen = pygame.display.set_mode((1200, 600))
 pygame.display.set_caption("...")
@@ -143,6 +150,7 @@ while menu:
 
         pygame.display.flip()
 
+# Камера включается при нажатии кнопки начать
 if closet:
     handsDetector = mp.solutions.hands.Hands()
     cap = cv2.VideoCapture(0)
@@ -177,9 +185,13 @@ if closet:
             cv2.drawContours(flippedRGB, [points], 0, (255, 0, 0), 2)
             (x, y), r = cv2.minEnclosingCircle(points)
             ws = palm_size(landmarks, flippedRGB.shape)
+
+            # Это вызов секретной функции
             if V(landmarks) and V(landmarks2):
                 pyautogui.alert(text = 'Continue?', title = 'Sys error code 019x192222988133', button = 'Yes')
                 secret()
+
+            # Зажатие и отпускание мыши
             if len(landmarks2) != 0:
                 if threefingers(landmarks2, threshold=0.1):
                     if not press:
@@ -191,7 +203,7 @@ if closet:
                         pyautogui.mouseUp()
                         press = False
                         print("Mouse up")
-
+            # Вызов скриншота с выбором сохранения в файл или в буфер обмена
             if like(landmarks, threshold=0.05) and like(landmarks2, threshold=0.05):
                 scrtime += 1
                 if scrtime > 10:
@@ -210,6 +222,8 @@ if closet:
                     scrtime = 0
             else:
                 scrtime = 0
+
+            # Клик мышью
             if 2 * r / ws > 1.4:
                 cv2.circle(flippedRGB, (int(x), int(y)), int(r), (0, 0, 255), 2)
                 prev_fist = False
@@ -237,6 +251,7 @@ if closet:
 
         cv2.imshow("Hands", res_image)
 
+    # Чистим рессурсы
     handsDetector.close()
     cap.release()
     cv2.destroyAllWindows()
