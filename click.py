@@ -185,20 +185,25 @@ if closet:
                     if not press:
                         pyautogui.mouseDown()
                         press = True
-                        print("True")
+                        print("Mouse down")
                 elif fourfingers(landmarks2):
                     if press:
                         pyautogui.mouseUp()
                         press = False
-                        print("False")
+                        print("Mouse up")
 
             if like(landmarks, threshold=0.05) and like(landmarks2, threshold=0.05):
                 scrtime += 1
                 if scrtime > 10:
+                    print("Select the option to save the screenshot (1 - file, 2 - clipboard):")
+                    scrvar = input()
                     pygame.mixer.music.load('screenshot.mp3')
                     pygame.mixer.music.play()
-                    pyautogui.hotkey('win', 'shift', 's')
-                    #screenshot.save('screenshot.png')
+                    if scrvar == "2":
+                        pyautogui.hotkey('win', 'shift', 's')
+                    else:
+                        screenshot = pyautogui.screenshot()
+                        screenshot.save('screenshot.png')
                     cv2.putText(flippedRGB, "Screenshot", (280, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255),
                                 thickness=2)
                     print("Screenshot")
